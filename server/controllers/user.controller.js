@@ -1,6 +1,8 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Task = require('../models/Task');
+const Project = require('../models/Project');
 
 async function createUser(req, res) {
   const errors = validationResult(req);
@@ -49,11 +51,39 @@ async function updateUser(req, res) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const payload = { ...req.body };
-  delete payload.refreshToken;
+  // only allow users to update their own profile unless admin
+  const actorId = req.user && req.user._id ? String(req.user._id) : null;
+  const targetId = String(req.params.id);
+  if (actorId !== targetId && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
 
-  if (payload.password) {
-    payload.password = await bcrypt.hash(payload.password, 10);
+  // whitelist writable profile fields
+  const allowed = [
+    'name',
+    'department',
+    'skills',
+    'availability',
+    'avatar',
+    'bio',
+    'twitter',
+    'instagram',
+    'portfolio',
+    'links'
+  ];
+
+  // admins can also update role and notifications
+  if (req.user.role === 'admin') {
+    allowed.push('role', 'notifications');
+  }
+
+  const payload = {};
+  for (const k of allowed) {
+    if (typeof req.body[k] !== 'undefined') payload[k] = req.body[k];
+  }
+
+  if (req.body.password) {
+    payload.password = await bcrypt.hash(req.body.password, 10);
   }
 
   const updated = await User.findByIdAndUpdate(req.params.id, payload, {
@@ -66,6 +96,47 @@ async function updateUser(req, res) {
   }
 
   return res.json(updated);
+}
+
+async function getDashboard(req, res) {
+  const actorId = req.user && req.user._id ? String(req.user._id) : null;
+  const targetId = String(req.params.id);
+  if (actorId !== targetId && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+
+  const user = await User.findById(targetId).select('notifications name email');
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  const assignedTasks = await Task.find({ assignedTo: targetId })
+    .populate('projectId', 'name')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const tasksByStatus = assignedTasks.reduce((acc, t) => {
+    acc[t.status] = (acc[t.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const projects = await Project.find({ members: targetId })
+    .select('name status createdAt')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const completedProjects = projects.filter((p) => p.status === 'completed');
+
+  return res.json({
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email
+    },
+    assignedTasks,
+    tasksByStatus,
+    projects,
+    completedProjects,
+    notifications: user.notifications || []
+  });
 }
 
 async function updateAvailability(req, res) {
@@ -98,5 +169,6 @@ module.exports = {
   getUserById,
   updateUser,
   updateAvailability,
-  deleteUser
+  deleteUser,
+  getDashboard
 };

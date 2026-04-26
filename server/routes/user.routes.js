@@ -30,6 +30,8 @@ router.post(
 );
 router.get('/:id', getUserById);
 router.put('/:id', [body('email').optional().isEmail()], updateUser);
+const { getDashboard } = require('../controllers/user.controller');
+router.get('/:id/dashboard', getDashboard);
 router.put('/:id/availability', [body('availability').isIn(['free', 'busy', 'overloaded'])], updateAvailability);
 router.delete('/:id', requireRole('admin'), deleteUser);
 
