@@ -4,7 +4,16 @@ function requireRole(...allowedRoles) {
       return res.status(401).json({ message: 'Unauthenticated' });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    // Normalize roles to lower-case to avoid accidental casing mismatches
+    const normalizedAllowed = allowedRoles.map((r) => String(r).toLowerCase());
+    const userRole = String(req.user.role || '').toLowerCase();
+
+    if (!normalizedAllowed.includes(userRole)) {
+      console.warn('requireRole: access denied', {
+        userId: req.user._id,
+        userRole: req.user.role,
+        allowedRoles: allowedRoles
+      });
       return res.status(403).json({ message: 'Forbidden' });
     }
 
