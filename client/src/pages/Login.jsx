@@ -32,19 +32,31 @@ export default function Login() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bx-bg px-4">
-      <section className="w-full max-w-md rounded-xl border border-bx-border bg-bx-card p-6">
-        <p className="text-xs uppercase tracking-[0.2em] text-bx-muted">BlockX AI Limited</p>
-        <h1 className="mt-2 font-display text-3xl font-bold text-bx-text">Portal Login</h1>
-        <p className="mt-2 text-sm text-bx-muted">Use your employee credentials to continue.</p>
+    <main
+      className="flex min-h-screen items-center justify-center px-4"
+      style={{
+        backgroundImage: "url('https://i.pinimg.com/1200x/e7/19/07/e71907be6d0d62ef58eadd99e91fe386.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
+      <div className="absolute inset-0 bg-black/60" />
 
-        <form onSubmit={submit} className="mt-6 space-y-3">
+      <section className="relative w-full max-w-md rounded-2xl border border-white/20 bg-white/5 backdrop-blur-lg p-8 shadow-xl">
+        <div className="flex flex-col items-center text-center">
+         
+          <p className="text-xs uppercase tracking-[0.2em] text-white/70">BlockX AI Limited</p>
+          <h1 className="mt-2 font-display text-3xl font-bold text-white">Welcome back</h1>
+          <p className="mt-2 text-sm text-white/70">Sign in to continue to your portal</p>
+        </div>
+
+        <form onSubmit={submit} className="mt-6 space-y-4">
           <input
             type="email"
             required
             value={form.email}
             onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-            className="w-full rounded-md border border-bx-border bg-bx-surface px-3 py-2 text-sm text-bx-text outline-none focus:border-bx-red"
+            className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/60 outline-none focus:ring-2 focus:ring-white/30"
             placeholder="Email"
           />
           <input
@@ -52,18 +64,18 @@ export default function Login() {
             required
             value={form.password}
             onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-            className="w-full rounded-md border border-bx-border bg-bx-surface px-3 py-2 text-sm text-bx-text outline-none focus:border-bx-red"
+            className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/60 outline-none focus:ring-2 focus:ring-white/30"
             placeholder="Password"
           />
           {error && <p className="text-sm text-red-400">{error}</p>}
-          <Button type="submit" disabled={loading} className="w-full">
+          <Button type="submit" disabled={loading} className="w-full bg-white/10 text-white">
             {loading ? 'Signing in...' : 'Sign in'}
           </Button>
 
           <div className="flex items-center gap-3 py-1">
-            <div className="h-px flex-1 bg-bx-border" />
-            <span className="text-xs uppercase tracking-[0.2em] text-bx-muted">or</span>
-            <div className="h-px flex-1 bg-bx-border" />
+            <div className="h-px flex-1 bg-white/20" />
+            <span className="text-xs uppercase tracking-[0.2em] text-white/70">or</span>
+            <div className="h-px flex-1 bg-white/20" />
           </div>
 
           {googleClientId ? (
@@ -86,7 +98,7 @@ export default function Login() {
               />
             </div>
           ) : (
-            <p className="text-center text-xs text-bx-muted">
+            <p className="text-center text-xs text-white/60">
               Google auth not configured. Set VITE_GOOGLE_CLIENT_ID to enable it.
             </p>
           )}
