@@ -26,6 +26,8 @@ export default function Employees() {
       try {
         const { data } = await api.get('/users');
         if (mounted) setEmployees(data);
+      } catch (err) {
+        if (mounted) setError(err.response?.data?.message || err.message || 'Unable to load employees');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -36,6 +38,7 @@ export default function Employees() {
       mounted = false;
     };
   }, []);
+
 
   const submitEmployee = async (event) => {
     event.preventDefault();
