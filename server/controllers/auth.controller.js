@@ -152,6 +152,7 @@ async function googleLogin(req, res) {
 
 async function refresh(req, res) {
   const token = req.cookies.refreshToken;
+  console.log('Auth refresh called - has refresh cookie?:', !!token, 'Incoming cookie keys:', Object.keys(req.cookies || {}));
   if (!token) {
     return res.status(401).json({ message: 'Missing refresh token' });
   }

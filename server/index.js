@@ -17,15 +17,25 @@ const { registerChatHandlers } = require('./socket/chatHandler');
 const app = express();
 const server = http.createServer(app);
 
-// Allow multiple origins (comma-separated) and echo back the exact Origin
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || env.CLIENT_URL).split(',').map((s) => s.trim());
+// Allow multiple origins (comma-separated). Normalize entries by trimming,
+// removing trailing slashes, and lowercasing to avoid mismatches from env formatting.
+function normalizeOriginString(s) {
+  return String(s || '').trim().replace(/\/$/, '').toLowerCase();
+}
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || env.CLIENT_URL)
+  .split(',')
+  .map(normalizeOriginString)
+  .filter(Boolean);
 
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
       // allow requests with no origin (mobile apps, curl)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      const normalized = normalizeOriginString(origin);
+      if (allowedOrigins.includes(normalized)) return callback(null, true);
+      console.warn('CORS origin denied:', origin, 'normalized->', normalized);
       return callback(new Error('CORS origin denied'));
     },
     credentials: true
@@ -38,7 +48,9 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      const normalized = normalizeOriginString(origin);
+      if (allowedOrigins.includes(normalized)) return callback(null, true);
+      console.warn('CORS origin denied:', origin, 'normalized->', normalized);
       return callback(new Error('CORS origin denied'));
     },
     credentials: true
