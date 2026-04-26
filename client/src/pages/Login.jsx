@@ -44,8 +44,10 @@ export default function Login() {
 
       <section className="relative w-full max-w-md rounded-2xl border border-white/20 bg-white/5 backdrop-blur-lg p-8 shadow-xl">
         <div className="flex flex-col items-center text-center">
-         
-          <p className="text-xs uppercase tracking-[0.2em] text-white/70">BlockX AI Limited</p>
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
+            <img src="/logo.png" alt="BlockX logo" className="h-10 w-10 object-contain" />
+          </div>
+        
           <h1 className="mt-2 font-display text-3xl font-bold text-white">Welcome back</h1>
           <p className="mt-2 text-sm text-white/70">Sign in to continue to your portal</p>
         </div>
