@@ -13,7 +13,11 @@ function cookieOptions() {
   return {
     httpOnly: true,
     secure: NODE_ENV === 'production',
-    sameSite: 'lax',
+    // When client and API are on different domains (Vercel + Render), the
+    // refresh cookie must allow cross-site requests. Use 'none' in
+    // production so browsers send the cookie with cross-site XHR/fetch,
+    // and keep 'lax' locally for safer development behavior.
+    sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000
   };
 }
