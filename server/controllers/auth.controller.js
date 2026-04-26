@@ -81,17 +81,22 @@ async function login(req, res) {
 
   const { email, password } = req.body;
   const normalizedEmail = String(email || '').trim().toLowerCase();
+  console.log('Login attempt for:', normalizedEmail);
   const user = await User.findOne({ email: normalizedEmail });
+  if (!user) console.log('Login failed: user not found for', normalizedEmail);
   if (!user) {
     return res.status(401).json({ message: 'Invalid credentials' });
   }
 
   const ok = await bcrypt.compare(password, user.password);
+  console.log('Password compare result for', normalizedEmail, ok);
   if (!ok) {
+    console.log('Login failed: incorrect password for', normalizedEmail);
     return res.status(401).json({ message: 'Invalid credentials' });
   }
 
   const payload = await issueSession(user, res);
+  console.log('Login success for', normalizedEmail);
   return res.json(payload);
 }
 
