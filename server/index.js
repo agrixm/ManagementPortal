@@ -17,9 +17,17 @@ const { registerChatHandlers } = require('./socket/chatHandler');
 const app = express();
 const server = http.createServer(app);
 
+// Allow multiple origins (comma-separated) and echo back the exact Origin
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || env.CLIENT_URL).split(',').map((s) => s.trim());
+
 const io = new Server(server, {
   cors: {
-    origin: env.CLIENT_URL,
+    origin: (origin, callback) => {
+      // allow requests with no origin (mobile apps, curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('CORS origin denied'));
+    },
     credentials: true
   }
 });
@@ -28,7 +36,11 @@ registerChatHandlers(io);
 
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('CORS origin denied'));
+    },
     credentials: true
   })
 );
