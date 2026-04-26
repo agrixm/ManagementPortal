@@ -62,6 +62,10 @@ app.use(errorHandler);
 
 async function start() {
   await connectDb(env.MONGO_URI);
+  // log configured origins for easier debugging in production
+  console.log('Configured CLIENT_URL:', env.CLIENT_URL);
+  console.log('Configured ALLOWED_ORIGINS:', allowedOrigins);
+
   server.listen(env.PORT, () => {
     console.log(`API running on port ${env.PORT}`);
   });
