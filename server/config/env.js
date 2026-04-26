@@ -1,6 +1,8 @@
-const dotenv = require('dotenv');
-
-dotenv.config({ override: true });
+// Load local .env only in non-production so host-provided envs are not overridden
+if (process.env.NODE_ENV !== 'production') {
+  const dotenv = require('dotenv');
+  dotenv.config();
+}
 
 const required = ['MONGO_URI', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
 
