@@ -29,13 +29,10 @@ function App() {
         <Route path="/tasks" element={<Tasks />} />
         <Route
           path="/employees"
-          element={
-            <PrivateRoute roles={['admin', 'manager']}>
-              <Employees />
-            </PrivateRoute>
-          }
+          element={<Employees />}
         />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:id" element={<Profile />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.use(verifyToken);
 
-router.get('/', requireRole('admin', 'manager'), getUsers);
+router.get('/', requireRole('admin', 'manager', 'employee'), getUsers);
 router.post(
   '/',
   requireRole('admin', 'manager'),

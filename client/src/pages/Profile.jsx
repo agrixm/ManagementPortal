@@ -1,5 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
 import AvailabilityBadge from '../components/employees/AvailabilityBadge';
 import api from '../services/api';
@@ -8,37 +9,69 @@ import { fetchMe } from '../features/auth/authSlice';
 export default function Profile() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
+  const params = useParams();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [viewUser, setViewUser] = useState(null);
 
   useEffect(() => {
-    if (user) {
-      setForm({
-        name: user.name || '',
-        avatar: user.avatar || '',
-        bio: user.bio || '',
-        twitter: user.twitter || '',
-        instagram: user.instagram || '',
-        portfolio: user.portfolio || [],
-        links: user.links || []
-      });
+    // support viewing another user's profile via /profile/:id
+    const viewedId = params?.id;
+    const isOwn = !viewedId || (user && (viewedId === (user._id || user.id)));
 
-      // fetch dashboard data
-      (async () => {
+    async function loadViewedUser() {
+      if (viewedId && user && viewedId !== (user._id || user.id)) {
         try {
-          const userId = user._id || user.id;
-          const { data } = await api.get(`/users/${userId}/dashboard`);
-          setDashboard(data);
+          const { data } = await api.get(`/users/${viewedId}`);
+          setViewUser(data);
+          setForm({
+            name: data.name || '',
+            avatar: data.avatar || '',
+            bio: data.bio || '',
+            twitter: data.twitter || '',
+            instagram: data.instagram || '',
+            portfolio: data.portfolio || [],
+            links: data.links || []
+          });
         } catch (err) {
-          // ignore for now
+          // ignore - user may not exist
         }
-      })();
+        return;
+      }
+
+      if (user) {
+        setViewUser(null);
+        setForm({
+          name: user.name || '',
+          avatar: user.avatar || '',
+          bio: user.bio || '',
+          twitter: user.twitter || '',
+          instagram: user.instagram || '',
+          portfolio: user.portfolio || [],
+          links: user.links || []
+        });
+
+        // fetch dashboard data only for own profile
+        if (isOwn) {
+          (async () => {
+            try {
+              const userId = user._id || user.id;
+              const { data } = await api.get(`/users/${userId}/dashboard`);
+              setDashboard(data);
+            } catch (err) {
+              // ignore
+            }
+          })();
+        }
+      }
     }
-  }, [user]);
+
+    loadViewedUser();
+  }, [user, params]);
 
   async function handleSave(e) {
     e.preventDefault();
@@ -73,42 +106,47 @@ export default function Profile() {
 
   if (!user) return null;
 
+  const viewedId = params?.id;
+  const isOwn = !viewedId || (user && viewedId === (user._id || user.id));
+
   return (
-    <PageWrapper title="My Profile">
+    <PageWrapper title={isOwn ? 'My Profile' : 'Profile'}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="col-span-1 rounded-lg border border-bx-border bg-bx-card p-5">
           <div className="flex items-center gap-4">
-            <img src={user.avatar || '/avatar.png'} alt="avatar" className="h-16 w-16 rounded-full object-cover" />
+            <img src={(viewUser || user).avatar || '/avatar.png'} alt="avatar" className="h-16 w-16 rounded-full object-cover" />
             <div>
-              <h2 className="font-display text-lg text-bx-text">{user.name}</h2>
-              <p className="text-sm text-bx-muted">{user.email}</p>
+              <h2 className="font-display text-lg text-bx-text">{(viewUser || user).name}</h2>
+              <p className="text-sm text-bx-muted">{(viewUser || user).email}</p>
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs uppercase text-bx-muted">{user.role}</span>
-                <AvailabilityBadge value={user.availability || 'free'} />
+                <span className="text-xs uppercase text-bx-muted">{(viewUser || user).role}</span>
+                <AvailabilityBadge value={(viewUser || user).availability || 'free'} />
               </div>
             </div>
           </div>
 
           <div className="mt-4">
-            <p className="text-sm text-bx-text">{user.bio}</p>
+            <p className="text-sm text-bx-text">{(viewUser || user).bio}</p>
             <div className="mt-3 text-sm text-bx-muted">
-              {user.twitter && (
+              {(viewUser || user).twitter && (
                 <div>
-                  <strong>Twitter:</strong> {user.twitter}
+                  <strong>Twitter:</strong> {(viewUser || user).twitter}
                 </div>
               )}
-              {user.instagram && (
+              {(viewUser || user).instagram && (
                 <div>
-                  <strong>Instagram:</strong> {user.instagram}
+                  <strong>Instagram:</strong> {(viewUser || user).instagram}
                 </div>
               )}
             </div>
           </div>
 
           <div className="mt-4">
-            <button onClick={() => setEditing((s) => !s)} className="bx-btn">
-              {editing ? 'Cancel' : 'Edit Profile'}
-            </button>
+            {isOwn && (
+              <button onClick={() => setEditing((s) => !s)} className="bx-btn">
+                {editing ? 'Cancel' : 'Edit Profile'}
+              </button>
+            )}
           </div>
         </div>
 

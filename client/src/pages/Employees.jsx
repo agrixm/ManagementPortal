@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import PageWrapper from '../components/layout/PageWrapper';
 import api from '../services/api';
 import EmployeeCard from '../components/employees/EmployeeCard';
 
 export default function Employees() {
+  const currentUser = useSelector((s) => s.auth.user);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -69,10 +71,11 @@ export default function Employees() {
 
   return (
     <PageWrapper title="Employees">
-      <form
-        onSubmit={submitEmployee}
-        className="mb-4 grid gap-3 rounded-lg border border-bx-border bg-bx-card p-4 md:grid-cols-3"
-      >
+      {currentUser?.role === 'admin' && (
+        <form
+          onSubmit={submitEmployee}
+          className="mb-4 grid gap-3 rounded-lg border border-bx-border bg-bx-card p-4 md:grid-cols-3"
+        >
         <input
           required
           placeholder="Full name"
@@ -128,8 +131,9 @@ export default function Employees() {
         >
           {saving ? 'Adding employee...' : 'Add employee'}
         </button>
-        {error && <p className="md:col-span-3 text-sm text-red-400">{error}</p>}
-      </form>
+          {error && <p className="md:col-span-3 text-sm text-red-400">{error}</p>}
+        </form>
+      )}
 
       {loading && <p className="text-sm text-bx-muted">Loading employees...</p>}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
