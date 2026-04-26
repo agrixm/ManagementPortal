@@ -30,6 +30,13 @@ async function issueSession(user, res) {
   await user.save();
 
   res.cookie('refreshToken', refreshToken, cookieOptions());
+  // Log whether the Set-Cookie header was attached (do not log secret values)
+  try {
+    const hasSetCookie = !!res.getHeader && !!res.getHeader('Set-Cookie');
+    console.log('issueSession: Set-Cookie header present?', hasSetCookie);
+  } catch (e) {
+    console.warn('issueSession: unable to read Set-Cookie header');
+  }
 
   return {
     accessToken,
